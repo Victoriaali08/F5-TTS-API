@@ -22,4 +22,4 @@ services:
             capabilities: [gpu]
     shm_size: 40g
     ports:
-      - "0.0.0.0:17782:17781"
+      - "0.0.0.0:17781:17781"
