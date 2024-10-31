@@ -1,0 +1,12 @@
+{
+	"name": "f5ttsrelease",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "f5ttsrelease",
+    "workspaceFolder": "/app",
+    "extensions": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "humao.rest-client",
+        "samge.vscode-samge-translate"
+    ]
+}

@@ -1,0 +1,16 @@
+# set base mirror
+FROM ghcr.io/swivid/f5-tts:main
+
+# 设置工作目录
+WORKDIR /home
+
+ARG PROXY
+ENV http_proxy=${PROXY} https_proxy=${PROXY}
+
+COPY requirements.txt requirements.txt
+
+# use known version number
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 重置代理配置
+ENV http_proxy='' https_proxy=''
