@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  f5-tts-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - F:/.cache:/root/.cache
+      - ../.cache/.music:/app/.cache/.music
+      - ../.cache/output:/app/.cache/output
+    restart: unless-stopped
+    network_mode: bridge
+    environment:
+      F5TTS_BASE_URL: http://localhost:17781
+    ports:
+      - "0.0.0.0:17781:17781"

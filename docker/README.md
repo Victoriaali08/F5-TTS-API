@@ -3,7 +3,7 @@
 
 ### 构建api正式包
 ```shell
-docker build . -t samge/f5-tts-api -f docker/Dockerfile
+docker build . -t samge/f5-tts-api -f docker/Dockerfile --no-cache
 ```
 
 ### 上传

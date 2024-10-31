@@ -173,5 +173,5 @@ cython_debug/
 #.idea/
 
 # custom
-docker-compose.yml
+.devcontainer/docker-compose.yml
 .cache/

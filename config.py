@@ -6,7 +6,7 @@
 import os
 
 # 缓存目录
-CACHE_DIR = "/app/.cache"
+CACHE_DIR = ".cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # 输出目录
@@ -20,7 +20,7 @@ os.makedirs(MUSIC_DIR, exist_ok=True)
 MUSIC_NAME_LIST = [name for name in os.listdir(MUSIC_DIR) if name.endswith(".mp3") or name.endswith(".wav")]
 
 # 默认音色
-DEFAULT_REF_AUDIO = f"{MUSIC_DIR}/345-🔥yf-元芳-精品男声（排队转换+无限制）.mp3"
+DEFAULT_REF_AUDIO = MUSIC_NAME_LIST[0] if MUSIC_NAME_LIST else None
 DEFAULT_REF_TEXT = "TTS Maker是一款免费的文本转语音工具，提供语音合成服务。"
 
 # 音频服务器地址

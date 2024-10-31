@@ -28,6 +28,18 @@ async def get_static_file(file_name: str):
 # 生成tts - post
 @app.post("/infer")
 async def infer(request: InferenceRequest):
+    
+    if not request.gen_text:
+        raise HTTPException(status_code=400, detail="推理文本gen_text不能为空")
+    
+    if not request.ref_file:
+        raise HTTPException(status_code=400, detail="参考音色ref_file不能为空")
+    
+    request.ref_file = f"{config.MUSIC_DIR}/{request.ref_file}"
+    if os.path.exists(request.ref_file) is False:
+        raise HTTPException(status_code=400, detail="参考音色ref_file文件不存在")
+    
+    request.ref_text = request.ref_text or ""
     audio_stream, wav_output_path = await u_audio.generate_audio_stream(request)
 
     if request.stream:
@@ -45,7 +57,7 @@ async def infer(request: InferenceRequest):
 @app.get("/infer")
 async def infer_get(
     gen_text: str,
-    ref_text: Optional[str] = config.DEFAULT_REF_TEXT,
+    ref_text: str = "",
     ref_file: Optional[str] = config.DEFAULT_REF_AUDIO,
     target_rms: float = 0.1,
     cross_fade_duration: float = 0.15,
@@ -56,11 +68,12 @@ async def infer_get(
     fix_duration: Optional[float] = None,
     remove_silence: bool = False,
     seed: Optional[int] = None,
-    stream: Optional[bool] = True
+    stream: Optional[bool] = True,
+    refresh: Optional[bool] = True
 ):
     request = InferenceRequest(
         gen_text=gen_text,
-        ref_text=ref_text,
+        ref_text=ref_text or "",
         ref_file=ref_file,
         target_rms=target_rms,
         cross_fade_duration=cross_fade_duration,
@@ -72,6 +85,7 @@ async def infer_get(
         remove_silence=remove_silence,
         seed=seed,
         stream=stream,
+        refresh=refresh,
     )
     return await infer(request)
 

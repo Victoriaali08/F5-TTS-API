@@ -21,6 +21,7 @@ from f5_tts.infer.utils_infer import (
 )
 
 
+
 class F5TTS:
     def __init__(
         self,
@@ -136,16 +137,18 @@ def get_f5tts():
     return f5tts
 
 
-if __name__ == "__main__":
-    f5tts = F5TTS()
-
-    wav, sr, spect = f5tts.infer(
-        ref_file=str(files("f5_tts").joinpath("infer/examples/basic/basic_ref_en.wav")),
-        ref_text="some call me nature, others call me mother nature.",
-        gen_text="""I don't really care what you call me. I've been a silent spectator, watching species evolve, empires rise and fall. But always remember, I am mighty and enduring. Respect me and I'll nurture you; ignore me and you shall face the consequences.""",
-        file_wave=str(files("f5_tts").joinpath("../../tests/api_out.wav")),
-        file_spect=str(files("f5_tts").joinpath("../../tests/api_out.png")),
+def _test():
+    import config    
+    wav, sr, spect = get_f5tts().infer(
+        ref_file=f"{config.MUSIC_DIR}/{config.DEFAULT_REF_AUDIO}",
+        ref_text=config.DEFAULT_REF_TEXT,
+        gen_text="hi",
+        file_wave=f"{config.OUTPUT_DIR}/demo.wav",
+        file_spect=None,
         seed=-1,  # random seed = -1
     )
+    print("init f5tts: ", wav, sr, spect)
 
-    print("seed :", f5tts.seed)
+
+if __name__ == "__main__":
+    _test()

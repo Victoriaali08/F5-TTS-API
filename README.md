@@ -24,21 +24,20 @@
 
 
 ### [docker方式运行>>](docker/README.md)
-```shell
-docker run -d \
---name f5-tts-api \
--e F5TTS_BASE_URL="http://localhost:17781" \
--e F5TTS_AUTH_TOKEN="" \
--v ~/.cache:/root/.cache \
--v ~/f5-tts-api/.music:/app/.cache/.music \
--p 17781:17781 \
---restart always \
-samge/f5-tts-api:latest
-```
+
+- GPU
+    ```shell
+    docker compose -f docker/docker-compose-gpu.yml -p f5ttsapi up -d --build
+    ```
+    
+- CPU
+    ```shell
+    docker compose -f docker/docker-compose.yml -p f5ttsapi up -d --build
+    ```
 
 ### 调用
 
- [http://localhost:17781/infer?seed=1&stream=1&gen_text=hi我是samge，欢迎使用语音克隆服务](http://localhost:17781/infer?seed=1&stream=1&gen_text=hi我是samge，欢迎使用语音克隆服务)
+ [http://localhost:17781/infer?seed=1&stream=1&refresh=0&gen_text=hi我是samge，欢迎使用语音克隆服务](http://localhost:17781/infer?seed=1&stream=1&refresh=0&gen_text=hi我是samge，欢迎使用语音克隆服务)
 
 
 ### [可选] 本地调试

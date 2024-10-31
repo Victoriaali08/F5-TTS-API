@@ -24,7 +24,7 @@ async def generate_audio_stream(request: InferenceRequest):
     param_md5 = u_common.generate_md5(request)
     wav_output_path = f"{config.OUTPUT_DIR}/{param_md5}.wav"
     
-    if os.path.exists(wav_output_path):
+    if not request.refresh and os.path.exists(wav_output_path):
         # 如果文件已经存在，检查文件是否可播放
         print("音频文件已存在，检查文件是否可播放")
         try:
