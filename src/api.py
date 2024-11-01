@@ -1,25 +1,24 @@
 import random
 import sys
-import tqdm
 from importlib.resources import files
 
 import soundfile as sf
 import torch
+import tqdm
 from cached_path import cached_path
 
-from f5_tts.model import DiT, UNetT
-from f5_tts.model.utils import seed_everything
 from f5_tts.infer.utils_infer import (
-    load_vocoder,
-    load_model,
+    hop_length,
     infer_process,
+    load_model,
+    load_vocoder,
+    preprocess_ref_audio_text,
     remove_silence_for_generated_wav,
     save_spectrogram,
-    preprocess_ref_audio_text,
     target_sample_rate,
-    hop_length,
 )
-
+from f5_tts.model import DiT, UNetT
+from f5_tts.model.utils import seed_everything
 
 
 class F5TTS:
@@ -30,6 +29,7 @@ class F5TTS:
         vocab_file="",
         ode_method="euler",
         use_ema=True,
+        vocoder_name="vocos",
         local_path=None,
         device=None,
     ):
@@ -38,6 +38,7 @@ class F5TTS:
         self.target_sample_rate = target_sample_rate
         self.hop_length = hop_length
         self.seed = -1
+        self.mel_spec_type = vocoder_name
 
         # Set device
         self.device = device or (
@@ -45,16 +46,19 @@ class F5TTS:
         )
 
         # Load models
-        self.load_vocoder_model(local_path)
-        self.load_ema_model(model_type, ckpt_file, vocab_file, ode_method, use_ema)
+        self.load_vocoder_model(vocoder_name, local_path)
+        self.load_ema_model(model_type, ckpt_file, vocoder_name, vocab_file, ode_method, use_ema)
 
-    def load_vocoder_model(self, local_path):
-        self.vocoder = load_vocoder(local_path is not None, local_path, self.device)
+    def load_vocoder_model(self, vocoder_name, local_path):
+        self.vocoder = load_vocoder(vocoder_name, local_path is not None, local_path, self.device)
 
-    def load_ema_model(self, model_type, ckpt_file, vocab_file, ode_method, use_ema):
+    def load_ema_model(self, model_type, ckpt_file, mel_spec_type, vocab_file, ode_method, use_ema):
         if model_type == "F5-TTS":
             if not ckpt_file:
-                ckpt_file = str(cached_path("hf://SWivid/F5-TTS/F5TTS_Base/model_1200000.safetensors"))
+                if mel_spec_type == "vocos":
+                    ckpt_file = str(cached_path("hf://SWivid/F5-TTS/F5TTS_Base/model_1200000.safetensors"))
+                elif mel_spec_type == "bigvgan":
+                    ckpt_file = str(cached_path("hf://SWivid/F5-TTS/F5TTS_Base_bigvgan/model_1250000.pt"))
             model_cfg = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, conv_layers=4)
             model_cls = DiT
         elif model_type == "E2-TTS":
@@ -65,7 +69,9 @@ class F5TTS:
         else:
             raise ValueError(f"Unknown model type: {model_type}")
 
-        self.ema_model = load_model(model_cls, model_cfg, ckpt_file, vocab_file, ode_method, use_ema, self.device)
+        self.ema_model = load_model(
+            model_cls, model_cfg, ckpt_file, mel_spec_type, vocab_file, ode_method, use_ema, self.device
+        )
 
     def export_wav(self, wav, file_wave, remove_silence=False):
         sf.write(file_wave, wav, self.target_sample_rate)
@@ -108,6 +114,7 @@ class F5TTS:
             gen_text,
             self.ema_model,
             self.vocoder,
+            self.mel_spec_type,
             show_info=show_info,
             progress=progress,
             target_rms=target_rms,
@@ -128,27 +135,17 @@ class F5TTS:
 
         return wav, sr, spect
 
-f5tts = None
-
-def get_f5tts():
-    global f5tts
-    if f5tts is None:
-        f5tts = F5TTS()
-    return f5tts
-
-
-def _test():
-    import config    
-    wav, sr, spect = get_f5tts().infer(
-        ref_file=f"{config.MUSIC_DIR}/{config.DEFAULT_REF_AUDIO}",
-        ref_text=config.DEFAULT_REF_TEXT,
-        gen_text="hi",
-        file_wave=f"{config.OUTPUT_DIR}/demo.wav",
-        file_spect=None,
-        seed=-1,  # random seed = -1
-    )
-    print("init f5tts: ", wav, sr, spect)
-
 
 if __name__ == "__main__":
-    _test()
+    f5tts = F5TTS()
+
+    wav, sr, spect = f5tts.infer(
+        ref_file=str(files("f5_tts").joinpath("infer/examples/basic/basic_ref_en.wav")),
+        ref_text="some call me nature, others call me mother nature.",
+        gen_text="""I don't really care what you call me. I've been a silent spectator, watching species evolve, empires rise and fall. But always remember, I am mighty and enduring. Respect me and I'll nurture you; ignore me and you shall face the consequences.""",
+        file_wave=str(files("f5_tts").joinpath("../../tests/api_out.wav")),
+        file_spect=str(files("f5_tts").joinpath("../../tests/api_out.png")),
+        seed=-1,  # random seed = -1
+    )
+
+    print("seed :", f5tts.seed)

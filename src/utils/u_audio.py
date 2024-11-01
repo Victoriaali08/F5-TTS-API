@@ -4,9 +4,8 @@ import sys
 from io import BytesIO
 import soundfile as sf
 import config
-import src.api as api
 from src.models import InferenceRequest
-from src.utils import u_common
+from src.utils import u_api, u_common
 
 # 组装tts的http链接
 def gen_tts_output_url(filepath: str) -> str:
@@ -14,7 +13,8 @@ def gen_tts_output_url(filepath: str) -> str:
 
 # 生成tts数据
 async def generate_audio_stream(request: InferenceRequest):
-    f5tts = api.get_f5tts()
+    
+    f5tts = u_api.get_f5tts()
 
     # Set a random seed if not provided
     if request.seed is None:

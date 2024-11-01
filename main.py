@@ -7,14 +7,14 @@
 import click
 import uvicorn
 from src.app import app
-import src.api as api
+from src.utils import u_api
 
 @click.command()
 @click.option("--host", "-H", default="0.0.0.0", help="Host to run the app on")
 @click.option("--port", "-p", default=17781, type=int, help="Port to run the app on")
 def main(port: int, host: str):
     """Run the FastAPI app."""
-    api.get_f5tts()
+    u_api.get_f5tts()
     uvicorn.run(app, host=host, port=port)
 
 if __name__ == "__main__":

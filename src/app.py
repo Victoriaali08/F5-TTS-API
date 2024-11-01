@@ -35,7 +35,7 @@ async def infer(request: InferenceRequest):
     if not request.ref_file:
         raise HTTPException(status_code=400, detail="参考音色ref_file不能为空")
     
-    request.ref_file = f"{config.MUSIC_DIR}/{request.ref_file}"
+    request.ref_file = os.path.normpath(f"{config.MUSIC_DIR}/{request.ref_file}")
     if os.path.exists(request.ref_file) is False:
         raise HTTPException(status_code=400, detail="参考音色ref_file文件不存在")
     
